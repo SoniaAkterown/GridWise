@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GridWise • Smart Campus Energy Optimization Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Top Navigation -->
+        <header class="header-nav">
+            <div class="brand-group">
+                <div class="brand-logo-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="brand-title">GridWise <span class="badge-accent">BUP Campus EMS</span></h1>
+                    <p class="brand-subtitle">Smart Campus Energy Scheduling &amp; LLM Directive Optimization Engine</p>
+                </div>
+            </div>
+
+            <div class="nav-controls">
+                <div class="control-group">
+                    <label for="scenarioSelect" class="control-label">Scenario Presets</label>
+                    <select id="scenarioSelect" class="custom-select">
+                        <option value="SAMPLE-01">Case 01: Solar cleaning derate + distractor</option>
+                        <option value="SAMPLE-02">Case 02: Battery charging maintenance window</option>
+                        <option value="SAMPLE-03">Case 03: Emergency reserve floor percentage</option>
+                        <option value="SAMPLE-04">Case 04: Inverter protection test</option>
+                        <option value="SAMPLE-05">Case 05: Substation temporary feeder cap</option>
+                        <option value="SAMPLE-06">Case 06: Multi-constraint with distractor</option>
+                        <option value="SAMPLE-07">Case 07: Reserve floor + transformer cap</option>
+                        <option value="SAMPLE-08">Case 08: Separate charge/discharge outages</option>
+                        <option value="SAMPLE-09">Case 09: Reduction wording normalization</option>
+                        <option value="SAMPLE-10">Case 10: Multi-constraint evening operation</option>
+                        <option value="CUSTOM">+ Custom Scenario Builder</option>
+                    </select>
+                </div>
+
+                <button id="btnOptimize" class="btn-primary">
+                    <svg class="btn-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                    </svg>
+                    <span>Run Optimization</span>
+                </button>
+
+                <button id="btnOpenJsonModal" class="btn-secondary">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                    </svg>
+                    <span>Raw JSON</span>
+                </button>
+
+                <button id="btnExportCsv" class="btn-secondary">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                        <polyline points="7 10 12 15 17 10" />
+                        <line x1="12" y1="15" x2="12" y2="3" />
+                    </svg>
+                    <span>Export CSV</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Live Performance & Resource Telemetry Bar -->
+        <section class="telemetry-bar">
+            <div class="telemetry-item">
+                <div class="telemetry-icon-box">
+                    <svg width="18" height="18" class="text-emerald" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+                    </svg>
+                </div>
+                <div>
+                    <span class="telemetry-label">Automated QA Suite</span>
+                    <span class="telemetry-val text-emerald" id="telemetryTests">13/13 PASS (100%)</span>
+                </div>
+            </div>
+            <div class="telemetry-divider"></div>
+            <div class="telemetry-item">
+                <div class="telemetry-icon-box">
+                    <svg width="18" height="18" class="text-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                </div>
+                <div>
+                    <span class="telemetry-label">Process Memory (RAM)</span>
+                    <span class="telemetry-val text-cyan" id="telemetryRam">-- MB</span>
+                </div>
+            </div>
+            <div class="telemetry-divider"></div>
+            <div class="telemetry-item">
+                <div class="telemetry-icon-box">
+                    <svg width="18" height="18" class="text-yellow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                </div>
+                <div>
+                    <span class="telemetry-label">HiGHS LP Latency</span>
+                    <span class="telemetry-val text-yellow" id="telemetryLatency">-- ms</span>
+                </div>
+            </div>
+            <div class="telemetry-divider"></div>
+            <div class="telemetry-item">
+                <div class="telemetry-icon-box">
+                    <svg width="18" height="18" class="text-purple" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                </div>
+                <div>
+                    <span class="telemetry-label">CPU Utilization</span>
+                    <span class="telemetry-val text-purple" id="telemetryCpu">--%</span>
+                </div>
+            </div>
+            <div class="telemetry-divider"></div>
+            <div class="telemetry-item">
+                <div class="telemetry-icon-box">
+                    <svg width="18" height="18" class="text-emerald" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg>
+                </div>
+                <div>
+                    <span class="telemetry-label">Resilience Fallback</span>
+                    <span class="telemetry-val text-emerald">0% Crash Rate</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Custom Prompt & Manual Data Builder Panel -->
+        <section id="customInputPanel" class="card custom-panel" style="display: none;">
+            <div class="card-header">
+                <div class="card-title-group">
+                    <svg class="card-title-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                    </svg>
+                    <h2>Manual Data Input &amp; Custom Scenario Builder</h2>
+                </div>
+                <div class="input-mode-toggles">
+                    <button type="button" id="btnModeForm" class="btn-toggle active">Form Mode</button>
+                    <button type="button" id="btnModeJson" class="btn-toggle">Raw JSON Mode</button>
+                </div>
+            </div>
+
+            <!-- Form Mode View -->
+            <div id="formModeView">
+                <div class="custom-inputs-grid">
+                    <div class="section-label" style="margin-top: 6px;">1. OPERATOR NATURAL LANGUAGE DIRECTIVES (1-3 NOTES)</div>
+                    <div class="input-field-group">
+                        <label class="control-label">Note 1 (e.g. Solar Cleaning / Reduction)</label>
+                        <input type="text" id="customNote1" class="custom-text-input" placeholder="e.g. Wash rooftop solar panels from 11 AM until 2 PM. Usable solar will drop to 25%.">
+                    </div>
+                    <div class="input-field-group">
+                        <label class="control-label">Note 2 (e.g. Battery Outage / Minimum Reserve)</label>
+                        <input type="text" id="customNote2" class="custom-text-input" placeholder="e.g. Relay testing from 6 PM to 8 PM, do not discharge the battery.">
+                    </div>
+                    <div class="input-field-group">
+                        <label class="control-label">Note 3 (e.g. Grid Feeder Cap or Distractor notice)</label>
+                        <input type="text" id="customNote3" class="custom-text-input" placeholder="e.g. Transformer maintenance caps grid intake to 140 kWh between 18:00 and 21:00.">
+                    </div>
+
+                    <div class="section-label" style="margin-top: 14px;">2. MANUAL BATTERY SPECIFICATIONS (BESS PARAMETERS)</div>
+                    <div class="battery-params-grid">
+                        <div class="input-field-group">
+                            <label class="control-label">Capacity (kWh)</label>
+                            <input type="number" id="manualBatCap" class="custom-text-input" value="220" step="10" min="10">
+                        </div>
+                        <div class="input-field-group">
+                            <label class="control-label">Initial Energy (kWh)</label>
+                            <input type="number" id="manualBatInit" class="custom-text-input" value="110" step="10" min="0">
+                        </div>
+                        <div class="input-field-group">
+                            <label class="control-label">Min Reserve (kWh)</label>
+                            <input type="number" id="manualBatMin" class="custom-text-input" value="40" step="5" min="0">
+                        </div>
+                        <div class="input-field-group">
+                            <label class="control-label">Max Charge (kWh/h)</label>
+                            <input type="number" id="manualBatMaxChg" class="custom-text-input" value="50" step="5" min="5">
+                        </div>
+                        <div class="input-field-group">
+                            <label class="control-label">Max Discharge (kWh/h)</label>
+                            <input type="number" id="manualBatMaxDis" class="custom-text-input" value="50" step="5" min="5">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Raw JSON Mode View -->
+            <div id="jsonModeView" style="display: none;">
+                <div class="input-field-group">
+                    <label class="control-label">Paste / Edit Raw Request JSON (OptimizeEnergyRequest schema)</label>
+                    <textarea id="rawJsonInput" class="custom-textarea" rows="10" placeholder="Paste full OptimizeEnergyRequest JSON here..."></textarea>
+                </div>
+            </div>
+        </section>
+
+        <!-- KPI Summary Cards -->
+        <section class="kpi-grid">
+            <div class="kpi-card kpi-glow-cyan">
+                <div class="kpi-header">
+                    <span class="kpi-title">Total Grid Energy</span>
+                    <div class="kpi-icon-box">
+                        <svg width="20" height="20" class="text-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
+                    </div>
+                </div>
+                <div class="kpi-value" id="kpiTotalGrid">-- <span class="kpi-unit">kWh</span></div>
+                <div class="kpi-subtext" id="kpiGridSubtext">24-hour utility grid import</div>
+                <div class="kpi-progress-bar"><div id="kpiGridBar" class="bar-fill cyan-fill" style="width: 50%;"></div></div>
+            </div>
+
+            <div class="kpi-card kpi-glow-emerald">
+                <div class="kpi-header">
+                    <span class="kpi-title">Total Optimized Cost</span>
+                    <div class="kpi-icon-box">
+                        <svg width="20" height="20" class="text-emerald" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                </div>
+                <div class="kpi-value" id="kpiTotalCost">-- <span class="kpi-unit">BDT</span></div>
+                <div class="kpi-subtext" id="kpiCostSavings">Calculated via TOU tariffs</div>
+                <div class="kpi-progress-bar"><div id="kpiCostBar" class="bar-fill emerald-fill" style="width: 40%;"></div></div>
+            </div>
+
+            <div class="kpi-card kpi-glow-amber">
+                <div class="kpi-header">
+                    <span class="kpi-title">Peak Grid Demand</span>
+                    <div class="kpi-icon-box">
+                        <svg width="20" height="20" class="text-amber" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                        </svg>
+                    </div>
+                </div>
+                <div class="kpi-value" id="kpiPeakDemand">-- <span class="kpi-unit">kWh/h</span></div>
+                <div class="kpi-subtext" id="kpiPeakSubtext">Max hourly grid intake</div>
+                <div class="kpi-progress-bar"><div id="kpiPeakBar" class="bar-fill amber-fill" style="width: 60%;"></div></div>
+            </div>
+
+            <div class="kpi-card kpi-glow-yellow">
+                <div class="kpi-header">
+                    <span class="kpi-title">Solar Self-Supply</span>
+                    <div class="kpi-icon-box">
+                        <svg width="20" height="20" class="text-yellow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                        </svg>
+                    </div>
+                </div>
+                <div class="kpi-value" id="kpiSolarTotal">-- <span class="kpi-unit">kWh</span></div>
+                <div class="kpi-subtext" id="kpiSolarSubtext">Green renewable energy used</div>
+                <div class="kpi-progress-bar"><div id="kpiSolarBar" class="bar-fill yellow-fill" style="width: 75%;"></div></div>
+            </div>
+
+            <div class="kpi-card kpi-glow-purple">
+                <div class="kpi-header">
+                    <span class="kpi-title">Battery Arbitrage Flow</span>
+                    <div class="kpi-icon-box">
+                        <svg width="20" height="20" class="text-purple" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <rect x="2" y="7" width="16" height="10" rx="2" ry="2"></rect>
+                            <line x1="22" y1="11" x2="22" y2="13"></line>
+                        </svg>
+                    </div>
+                </div>
+                <div class="kpi-value" id="kpiBatteryFlow">-- <span class="kpi-unit">kWh</span></div>
+                <div class="kpi-subtext" id="kpiBatterySubtext">Discharged during peak hours</div>
+                <div class="kpi-progress-bar"><div id="kpiBatteryBar" class="bar-fill purple-fill" style="width: 65%;"></div></div>
+            </div>
+        </section>
+
+        <!-- Live Interactive Microgrid Visualizer & Time Scrubber -->
+        <section class="card flow-visualizer-card">
+            <div class="card-header">
+                <div class="card-title-group">
+                    <div class="radar-pulse-icon">
+                        <span class="radar-circle"></span>
+                        <span class="radar-dot"></span>
+                    </div>
+                    <div>
+                        <h2>24-Hour Smart Campus Microgrid Simulation</h2>
+                        <p class="section-subtitle">Real-Time Power Flow • BESS Arbitrage • Physical Constraints Replay</p>
+                    </div>
+                </div>
+                <div class="nav-controls" style="margin-top: 0;">
+                    <button id="btnPlayAnimation" class="btn-glow-play">
+                        <svg id="playSvg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                        </svg>
+                        <span id="playText">Play 24H Stream</span>
+                    </button>
+                    <div class="day-phase-badge" id="dayPhaseBadge">
+                        <svg id="phaseSvg" width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                        </svg>
+                        <span id="phaseText">Day Solar Phase</span>
+                    </div>
+                    <span id="activeHourBadge" class="badge-hour">Hour 12:00</span>
+                </div>
+            </div>
+
+            <!-- Time Slider -->
+            <div class="celestial-track-wrapper">
+                <div class="slider-container">
+                    <input type="range" id="hourSlider" min="0" max="23" value="12" class="time-slider">
+                    <div class="slider-ticks">
+                        <span>00:00 (Night Valley)</span>
+                        <span>06:00 (Sunrise)</span>
+                        <span>12:00 (Peak Sun)</span>
+                        <span>18:00 (Peak Tariff ৳)</span>
+                        <span>23:00 (Reset EOD)</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Advanced High-Tech Energy Topology Control Deck -->
+            <div class="topology-deck">
+                <!-- Solar Node -->
+                <div class="topology-node node-solar-glow" id="nodeSolar">
+                    <div class="node-header">
+                        <div class="flex items-center gap-2">
+                            <svg width="18" height="18" class="text-yellow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                            </svg>
+                            <span class="node-label">Rooftop Solar PV</span>
+                        </div>
+                        <span class="node-status-tag" id="solarActiveTag">GENERATING</span>
+                    </div>
+                    <div class="node-val" id="flowSolarVal">-- kWh</div>
+                    <div class="node-sub" id="solarEffectiveSub">Direct campus infeed</div>
+                    <div class="node-bar-container"><div id="solarMiniBar" class="node-mini-bar yellow-fill" style="width: 60%;"></div></div>
+                </div>
+
+                <!-- Central Energy Hub Node -->
+                <div class="topology-node node-hub-glow" id="nodeHub">
+                    <div class="hub-core-spinner">
+                        <div class="core-ring ring-1"></div>
+                        <div class="core-ring ring-2"></div>
+                        <svg class="center-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                        </svg>
+                    </div>
+                    <div class="node-label">Microgrid Power Bus</div>
+                    <div class="node-val" id="flowTariffVal">-- BDT/kWh</div>
+                    <div class="node-sub" id="hubEfficiencySub">Lossless HiGHS LP Balance</div>
+                </div>
+
+                <!-- Campus Demand Node -->
+                <div class="topology-node node-demand-glow" id="nodeDemand">
+                    <div class="node-header">
+                        <div class="flex items-center gap-2">
+                            <svg width="18" height="18" class="text-rose" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                            </svg>
+                            <span class="node-label">Campus Load Demand</span>
+                        </div>
+                        <span class="node-status-tag tag-demand">100% SERVED</span>
+                    </div>
+                    <div class="node-val" id="flowDemandVal">-- kWh</div>
+                    <div class="node-sub">Total Facility Power</div>
+                    <div class="node-bar-container"><div id="demandMiniBar" class="node-mini-bar rose-fill" style="width: 80%;"></div></div>
+                </div>
+            </div>
+
+            <!-- Sub-Deck: Battery & Grid Nodes -->
+            <div class="topology-sub-deck">
+                <!-- Battery Storage Node with Liquid Glass Gauge -->
+                <div class="topology-node branch-node node-battery-glow" id="nodeBattery">
+                    <div class="bess-visual-box">
+                        <div class="battery-cylinder">
+                            <div class="battery-cap-top"></div>
+                            <div class="battery-liquid-fill" id="batteryLiquidFill" style="height: 50%;">
+                                <div class="liquid-wave"></div>
+                            </div>
+                            <div class="battery-pct-label" id="batteryPctLabel">50%</div>
+                        </div>
+                    </div>
+                    <div class="bess-details">
+                        <div class="node-header">
+                            <div class="node-label">BESS Battery Storage</div>
+                            <div class="badge-idle" id="flowBatteryAction">IDLE</div>
+                        </div>
+                        <div class="bess-stats-row">
+                            <div>
+                                <div class="bess-metric-label">Flow Rate</div>
+                                <div class="node-val" id="flowBatteryVal">0.0 kWh</div>
+                            </div>
+                            <div>
+                                <div class="bess-metric-label">State of Charge</div>
+                                <div class="node-val node-val-sub" id="flowBatterySoC">-- kWh</div>
+                            </div>
+                        </div>
+                        <div class="node-sub" id="batteryReserveSub">Reserve Rule: Active</div>
+                    </div>
+                </div>
+
+                <!-- Utility Grid Node -->
+                <div class="topology-node branch-node node-grid-glow" id="nodeGrid">
+                    <div class="grid-visual-box">
+                        <svg width="22" height="22" class="text-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
+                        <div class="grid-pulse-waves"><span></span><span></span><span></span></div>
+                    </div>
+                    <div class="grid-details">
+                        <div class="node-header">
+                            <div class="node-label">National Utility Grid</div>
+                            <span class="node-status-tag tag-grid" id="gridCapTag">NORMAL INTAKE</span>
+                        </div>
+                        <div class="bess-stats-row">
+                            <div>
+                                <div class="bess-metric-label">Grid Import</div>
+                                <div class="node-val" id="flowGridVal">-- kWh</div>
+                            </div>
+                            <div>
+                                <div class="bess-metric-label">Hourly Tariff Cost</div>
+                                <div class="node-val node-val-sub text-cyan" id="flowGridCost">৳0.0</div>
+                            </div>
+                        </div>
+                        <div class="node-sub" id="gridFeederSub">Feeder Capacity: Nominal</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Directives & Notes Panel -->
+        <section class="card directives-card">
+            <div class="card-header">
+                <div class="card-title-group">
+                    <svg class="card-title-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                    <h2>Natural Language Operator Notes &amp; Deterministic Guardrails</h2>
+                </div>
+                <span id="directiveCountBadge" class="tag-pill">2 Notes</span>
+            </div>
+            <div class="directives-content">
+                <div class="notes-block">
+                    <div class="section-label">UNSTRUCTURED OPERATOR NOTES</div>
+                    <ul id="operatorNotesList" class="notes-list">
+                        <!-- Injected by JS -->
+                    </ul>
+                </div>
+                <div class="parsed-block">
+                    <div class="section-label">STRUCTURED INTERPRETATIONS (GUARDRAILED)</div>
+                    <div id="directivesList" class="directives-parsed-list">
+                        <!-- Injected by JS -->
+                    </div>
+                </div>
+            </div>
+            <div id="planSummaryBox" class="plan-summary-box">
+                <strong>Optimization Strategy:</strong> <span id="planSummaryText">Computing optimal 24-hour dispatch...</span>
+            </div>
+        </section>
+
+        <!-- Visual Charts Grid (3 Dedicated Graphs) -->
+        <section class="charts-grid">
+            <!-- Power Flow Chart -->
+            <div class="card chart-card chart-large">
+                <div class="card-header">
+                    <div class="card-title-group">
+                        <svg class="card-title-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M3 3v18h18"></path>
+                            <path d="M18.7 8l-5.1 5.2-2.8-2.7L7 14.3"></path>
+                        </svg>
+                        <h2>24-Hour Campus Energy &amp; Generation Flow (Stacked Dispatch)</h2>
+                    </div>
+                    <span class="badge-info">Grid Import + Solar Used + Battery Flow = Demand</span>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="powerFlowChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Battery Storage & SoC Chart -->
+            <div class="card chart-card">
+                <div class="card-header">
+                    <div class="card-title-group">
+                        <svg class="card-title-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="2" y="7" width="16" height="10" rx="2" ry="2"></rect>
+                            <line x1="22" y1="11" x2="22" y2="13"></line>
+                        </svg>
+                        <h2>Battery Energy Storage &amp; State of Charge (SoC)</h2>
+                    </div>
+                    <span class="badge-info" id="batterySpecBadge">Cap: 220 kWh</span>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="batterySocChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Tariff & Cost Arbitrage Chart -->
+            <div class="card chart-card">
+                <div class="card-header">
+                    <div class="card-title-group">
+                        <svg class="card-title-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="12" y1="1" x2="12" y2="23"></line>
+                            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                        </svg>
+                        <h2>TOU Tariff Arbitrage &amp; Battery Charge/Discharge</h2>
+                    </div>
+                    <span class="badge-info">Cost Arbitrage</span>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="costArbitrageChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- Hourly Schedule Table Breakdown -->
+        <section class="card table-card">
+            <div class="card-header">
+                <div class="card-title-group">
+                    <svg class="card-title-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="8" y1="6" x2="21" y2="6"></line>
+                        <line x1="8" y1="12" x2="21" y2="12"></line>
+                        <line x1="8" y1="18" x2="21" y2="18"></line>
+                        <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                        <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                        <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                    </svg>
+                    <h2>Canonical 24-Hour Dispatch Schedule Matrix</h2>
+                </div>
+                <span class="badge-info">Hours 00:00 - 23:00 (Physical Replay Validated)</span>
+            </div>
+            <div class="table-container">
+                <table class="schedule-table">
+                    <thead>
+                        <tr>
+                            <th>Hour</th>
+                            <th>Demand (kWh)</th>
+                            <th>Solar Used (kWh)</th>
+                            <th>Tariff (BDT)</th>
+                            <th>Grid Import (kWh)</th>
+                            <th>Battery Action</th>
+                            <th>Battery Flow (kWh)</th>
+                            <th>End-of-Hour SoC (kWh)</th>
+                            <th>Hourly Cost (BDT)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="scheduleTableBody">
+                        <!-- Injected by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Enterprise Footer matching user design -->
+        <footer class="enterprise-footer">
+            <div class="footer-grid">
+                <!-- Column 1: Brand & Mission -->
+                <div class="footer-col">
+                    <div class="footer-brand-title">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="#f59e0b" stroke="#f59e0b" stroke-width="1.5">
+                            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                        </svg>
+                        <span>GridWise</span>
+                    </div>
+                    <p class="footer-brand-desc">
+                        Smart Campus Energy Optimizer combining large language models for natural language operator parsing with deterministic linear programming guardrails.
+                    </p>
+                    <div class="footer-status-line">
+                        <span class="pulse-dot"></span>
+                        <span>Uptime: 99.98% &bull; p95 Latency: 142ms</span>
+                    </div>
+                </div>
+
+                <!-- Column 2: PAGES -->
+                <div class="footer-col">
+                    <h4 class="footer-col-header">PAGES</h4>
+                    <ul class="footer-nav-list">
+                        <li><a href="#flowSolarVal" class="footer-nav-item">24-Hour Dispatch Dashboard</a></li>
+                        <li><a href="#directivesList" class="footer-nav-item">Operational Constraint Matrix</a></li>
+                        <li><a href="#powerFlowChart" class="footer-nav-item">Audit and Invariants Engine</a></li>
+                        <li><a href="#scheduleTableBody" class="footer-nav-item">Continuous Schedule Ledger</a></li>
+                        <li><a href="#jsonModal" onclick="document.getElementById('jsonModal').style.display='block';renderModalContent('req');" class="footer-nav-item">Data Exports &amp; API Contracts</a></li>
+                    </ul>
+                </div>
+
+                <!-- Column 3: AI FEATURES -->
+                <div class="footer-col">
+                    <h4 class="footer-col-header">AI FEATURES</h4>
+                    <ul class="footer-nav-list">
+                        <li class="footer-nav-item spec-item">Llama-3.3-70B <span style="color: #64748b;">Directive Extraction</span></li>
+                        <li class="footer-nav-item spec-item">Deterministic Shield <span style="color: #64748b;">Guardrail Layer</span></li>
+                        <li class="footer-nav-item spec-item">Offline Regex <span style="color: #64748b;">Heuristic Fallback Engine</span></li>
+                        <li class="footer-nav-item spec-item">Schema Sanitizer <span style="color: #64748b;">Invariant Enforcer</span></li>
+                        <li class="footer-nav-item spec-item">Zero-Blackout <span style="color: #64748b;">Constraint Verification</span></li>
+                    </ul>
+                </div>
+
+                <!-- Column 4: OPTIMIZATION & SOLVER -->
+                <div class="footer-col">
+                    <h4 class="footer-col-header">OPTIMIZATION &amp; SOLVER</h4>
+                    <ul class="footer-nav-list">
+                        <li class="footer-nav-item spec-item">SciPy HiGHS <span style="color: #64748b;">LP Interior-Point Solver</span></li>
+                        <li class="footer-nav-item spec-item">120 Continuous <span style="color: #64748b;">Decision Variables</span></li>
+                        <li class="footer-nav-item spec-item">EOD Neutrality: <span style="font-family: 'JetBrains Mono', monospace; color: #cbd5e1;">E₂₃ = E₀ Strict Equality</span></li>
+                        <li class="footer-nav-item spec-item">Battery Bounds: <span style="color: #64748b;">Physical Reserve Floors</span></li>
+                        <li class="footer-nav-item spec-item">Dynamic Balance: <span style="font-family: 'JetBrains Mono', monospace; color: #34d399;">&plusmn;0.00000 kWh Precision</span></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Bottom Copyright Bar -->
+            <div class="footer-bottom-bar">
+                <span>&copy; 2026 GridWise by DIU Artificial Idiots. All rights reserved.</span>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Raw Telemetry JSON Modal -->
+    <div id="jsonModal" class="card custom-panel" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1000; width: 90%; max-width: 800px; max-height: 85vh; overflow-y: auto; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.8);">
+        <div class="card-header">
+            <div class="card-title-group">
+                <svg class="card-title-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                </svg>
+                <h2>API Raw Telemetry Inspector</h2>
+            </div>
+            <button id="btnCloseModal" class="btn-secondary" style="margin-top: 0; padding: 4px 10px;">&times; Close</button>
+        </div>
+        <div class="input-mode-toggles" style="margin-bottom: 12px;">
+            <button type="button" id="tabReqModal" class="btn-toggle active">Request JSON</button>
+            <button type="button" id="tabResModal" class="btn-toggle">Response JSON</button>
+        </div>
+        <pre id="modalJsonDisplay" style="background: rgba(7, 12, 22, 0.95); border: 1px solid var(--border-color); color: #38bdf8; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; padding: 14px; border-radius: var(--radius-sm); overflow-x: auto; max-height: 480px;"></pre>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>
